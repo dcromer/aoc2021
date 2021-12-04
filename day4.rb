@@ -5,10 +5,12 @@ input = File.open("input/day4.txt").readlines.map(&:strip).reject(&:empty?)
 calls = input.shift
 
 class Board
-    attr_reader :cells
+  attr_reader :cells
+
+  Cell = Struct.new(:value, :marked)
 
   def initialize(rows)
-    @cells = rows.map { |row| row.split.map { |cell| { value: cell.to_i, marked: false } } }
+    @cells = rows.map { |row| row.split.map { |value| Cell.new(value.to_i, false) } }
   end
 
   def each_cell
@@ -18,8 +20,8 @@ class Board
 
   def mark(value)
     each_cell do |c|
-        if c[:value] == value
-            c[:marked] = true
+        if c.value == value
+            c.marked = true
             return value
         end
     end
@@ -27,7 +29,7 @@ class Board
 
   def to_s
     cells.map do |row|
-        row.map { |c| "#{sprintf("%2i", c[:value])}#{'*' if c[:marked]}" }.join(" ")
+        row.map { |c| "#{sprintf("%2i", c.value)}#{'*' if c.marked}" }.join(" ")
     end.join("\n")
   end
 
@@ -37,16 +39,16 @@ class Board
 
   def is_row_win?(rows)
     rows.any? do |row|
-        row.all? { |c| c[:marked] }
+        row.all?(&:marked)
     end
   end
 
   def is_diagonal_win?(rows)
-    (0..4).all? { |i| rows[i][i][:marked] }
+    (0..4).all? { |i| rows[i][i].marked }
   end
 
   def score
-    each_cell.reject { |c| c[:marked] }.sum { |c| c[:value] }
+    each_cell.reject(&:marked).sum(&:value)
   end
 end
 
@@ -57,11 +59,11 @@ while input.length > 0
 end
 
 def play_bingo(boards, calls)
-    calls.split(",").each do |call|
-        call = call.to_i
+    calls.split(",").each do |n|
+        n = n.to_i
         boards.each do |b|
-            b.mark(call)
-            return b.score * call if b.is_win?
+            b.mark(n)
+            return b.score * n if b.is_win?
         end
     end
 end
@@ -71,15 +73,15 @@ Helper.assert_equal 41668, score
 
 # Part 2
 def endless_bingo(boards, calls)
-    calls.split(",").each do |call|        
-        call = call.to_i
+    calls.split(",").each do |n|        
+        n = n.to_i
         winners = []
         boards.each do |b|
-            b.mark(call)
+            b.mark(n)
             winners << b if b.is_win?
         end
         if boards.length == 1 && boards[0].is_win?
-            return boards[0].score * call
+            return boards[0].score * n
         end
         boards -= winners
     end
