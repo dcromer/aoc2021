@@ -13,7 +13,7 @@ class Board
 
   def each_cell
     return enum_for :each_cell unless block_given?
-    cells.map { |row| row.map { |c| yield c } }
+    cells.each { |row| row.each { |c| yield c } }
   end
 
   def mark(value)
@@ -44,6 +44,10 @@ class Board
   def is_diagonal_win?(rows)
     (0..4).all? { |i| rows[i][i][:marked] }
   end
+
+  def score
+    each_cell.reject { |c| c[:marked] }.sum { |c| c[:value] }
+  end
 end
 
 boards = []
@@ -57,13 +61,12 @@ def play_bingo(boards, calls)
         call = call.to_i
         boards.each do |b|
             b.mark(call)
-            return b, call if b.is_win?
+            return b.score * call if b.is_win?
         end
     end
 end
 
-winner, final_call = play_bingo(boards, calls)
-score = winner.each_cell.reject { |c| c[:marked] }.sum { |c| c[:value] } * final_call
+score = play_bingo(boards, calls)
 Helper.assert_equal 41668, score
 
 # Part 2
@@ -76,12 +79,11 @@ def endless_bingo(boards, calls)
             winners << b if b.is_win?
         end
         if boards.length == 1 && boards[0].is_win?
-            return boards[0], call
+            return boards[0].score * call
         end
         boards -= winners
     end
 end
 
-winner, final_call = endless_bingo(boards, calls)
-score = winner.each_cell.reject { |c| c[:marked] }.sum { |c| c[:value] } * final_call
+score = endless_bingo(boards, calls)
 Helper.assert_equal 10478, score
