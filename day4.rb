@@ -35,17 +35,13 @@ class Board
   end
 
   def is_win?
-    is_row_win?(cells) || is_row_win?(cells.transpose) || is_diagonal_win?(cells) || is_diagonal_win?(cells.transpose)
+    is_row_win?(cells) || is_row_win?(cells.transpose)
   end
 
   def is_row_win?(rows)
     rows.any? do |row|
         row.all?(&:marked)
     end
-  end
-
-  def is_diagonal_win?(rows)
-    (0..4).all? { |i| rows[i][i].marked }
   end
 
   def score
