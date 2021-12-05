@@ -12,11 +12,11 @@ input.each do |line|
     p1 = Point.new(*p1.split(",").map(&:to_i))
     p2 = Point.new(*p2.split(",").map(&:to_i))
     if p1.x == p2.x # vertical
-        Range.new(*[p1.y, p2.y].sort).to_a.each do |y|
+        Range.new(*[p1.y, p2.y].sort).each do |y|
             grid[y][p1.x] += 1
         end
     elsif p1.y == p2.y # horizontal
-        Range.new(*[p1.x, p2.x].sort).to_a.each do |x|
+        Range.new(*[p1.x, p2.x].sort).each do |x|
             grid[p1.y][x] += 1
         end
     end
@@ -33,11 +33,11 @@ input.each do |line|
     p2 = Point.new(*p2.split(",").map(&:to_i))
 
     if p1.x == p2.x # vertical
-        Range.new(*[p1.y, p2.y].sort).to_a.each do |y|
+        Range.new(*[p1.y, p2.y].sort).each do |y|
             grid[y][p1.x] += 1
         end    
     elsif p1.y == p2.y # horizontal
-        Range.new(*[p1.x, p2.x].sort).to_a.each do |x|
+        Range.new(*[p1.x, p2.x].sort).each do |x|
             grid[p1.y][x] += 1
         end
     else
