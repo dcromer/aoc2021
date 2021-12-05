@@ -2,7 +2,7 @@ require './helper.rb'
 
 input = File.open("input/day4.txt").readlines.map(&:strip).reject(&:empty?)
 
-calls = input.shift
+calls = input.shift.split(",").map(&:to_i)
 
 class Board
   attr_reader :cells
@@ -19,11 +19,12 @@ class Board
   end
 
   def mark(value)
-    each_cell do |c|
-        if c.value == value
-            c.marked = true
-            return value
-        end
+    if hit = each_cell.detect { |c| c.value == value }
+      hit.marked = true
+      if is_win?
+        @winning_call = value
+        return true
+      end
     end
   end
 
@@ -48,44 +49,22 @@ class Board
   end
 
   def score
-    each_cell.reject(&:marked).sum(&:value)
+    each_cell.reject(&:marked).sum(&:value) * @winning_call
   end
 end
 
-boards = []
-while input.length > 0
-    rows = input.shift(5)
-    boards << Board.new(rows)
-end
+boards = input.each_slice(5).map { |rows| Board.new(rows) }
 
 def play_bingo(boards, calls)
-    calls.split(",").each do |n|
-        n = n.to_i
-        boards.each do |b|
-            b.mark(n)
-            return b.score * n if b.is_win?
-        end
-    end
+  calls.each_with_object([]) do |n, winners|
+    round_winners = boards.select { |b| b.mark(n) }
+    boards -= round_winners
+    winners.push(*round_winners)
+  end
 end
 
-score = play_bingo(boards, calls)
-Helper.assert_equal 41668, score
+winners = play_bingo(boards, calls)
 
+Helper.assert_equal 41668, winners.first.score
 # Part 2
-def endless_bingo(boards, calls)
-    calls.split(",").each do |n|        
-        n = n.to_i
-        winners = []
-        boards.each do |b|
-            b.mark(n)
-            winners << b if b.is_win?
-        end
-        if boards.length == 1 && boards[0].is_win?
-            return boards[0].score * n
-        end
-        boards -= winners
-    end
-end
-
-score = endless_bingo(boards, calls)
-Helper.assert_equal 10478, score
+Helper.assert_equal 10478, winners.last.score
