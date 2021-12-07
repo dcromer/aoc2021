@@ -3,25 +3,19 @@ require './helper.rb'
 input = File.open("input/day7.txt").readlines.map(&:strip).reject(&:empty?)
 
 crabs = input[0].split(",").map(&:to_i)
-
 buckets = [0] * (crabs.max + 1)
 crabs.each{ |c| buckets[c] += 1 }
 
-fuel = buckets.length.times.map do |i|
-   buckets.each_with_index.map do |num_crabs, j|
-        (j - i).abs * num_crabs
-   end.sum
+def calculate_fuel(b)
+    b.length.times.map do |i|
+        b.each_with_index.map do |num_crabs, j|
+            yield((j - i).abs) * num_crabs
+        end.sum
+    end.min
 end
 
-Helper.assert_equal 355150, fuel.min
+# Part 1
+Helper.assert_equal 355150, calculate_fuel(buckets) { |distance| distance }
 
 # Part 2
-fuel = buckets.length.times.map do |i|
-    buckets.each_with_index.map do |num_crabs, j|
-        distance = (j - i).abs
-        cumulative_distance =  distance * (distance + 1) / 2
-        cumulative_distance * num_crabs
-    end.sum
- end
-
-Helper.assert_equal 98368490, fuel.min
+Helper.assert_equal 98368490, calculate_fuel(buckets) { |distance| distance * (distance + 1) / 2 }
