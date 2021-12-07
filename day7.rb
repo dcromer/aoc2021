@@ -15,4 +15,14 @@ end
 
 
 Helper.assert_equal 355150, fuel.min
+
 # Part 2
+fuel = buckets.each_with_index.map do |num_crabs, i|
+    buckets.each_with_index.map do |other_crabs, j|
+        distance = (j - i).abs
+        cumulative_distance =  distance * (distance + 1) / 2
+        cumulative_distance * other_crabs
+    end.sum
+ end
+
+Helper.assert_equal 98368490, fuel.min
