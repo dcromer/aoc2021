@@ -42,10 +42,6 @@ part_2 = entries.map do |entry|
     }
     entry.output_value.map do |segments|
         translated = segments.map do |segment|
-            if segment_key[segment].nil?
-                binding.irb
-                break
-            end
             segment_key[segment]
         end.sort.join("")
         digit_key[translated].to_s
