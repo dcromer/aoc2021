@@ -6,13 +6,17 @@ grid = input.map do |row|
     row.split("").map(&:to_i)
 end
 
-def get_neighbors(g, i, j)
+def index_neighbors(g, i, j)
     [
-        (g[i][j - 1] if j > 0),
-        (g[i][j + 1] if j < g[i].length - 1),
-        (g[i - 1]&.at(j) if i > 0),
-        (g[i + 1]&.at(j) if i < g.length - 1)
+        ([i, j - 1] if j > 0),
+        ([i, j + 1] if j < g[i].length - 1),
+        ([i - 1, j] if i > 0),
+        ([i + 1, j] if i < g.length - 1)
     ].compact
+end
+
+def get_neighbors(g, i, j)
+    index_neighbors(g, i, j).map { |l, m| g[l][m] }
 end
 
 def get_low_points(g)
@@ -32,13 +36,26 @@ end
 low_heights = get_low_points(grid).each.map { |(i, j)| grid[i][j] }
 Helper.assert_equal 516, low_heights.sum + low_heights.count
 
+# Part 2
 basin_map = grid.each.map do |row|
-    row.each.map { |_| nil }
+    row.each.map { |_| -1 }
 end
 
 get_low_points(grid).each_with_index do |(i, j), color|
-    height = grid[i][j]
+    queue = [[i,j]]
+    basin_map[i][j] = color
+
+    while node = queue.shift do
+        i, j = *node
+        height = grid[i][j]
+        for (k, l) in index_neighbors(grid, i, j)
+            if (basin_map[k][l].nil? || basin_map[k][l] != color) && grid[k][l] != 9 && grid[k][l] >= height
+                basin_map[k][l] = color
+                queue.append [k, l]
+            end
+        end
+    end
 end
 
-puts grid.inspect
-puts basin_map.inspect
+a, b, c = *basin_map.flatten.group_by(&:itself).except(-1).transform_values(&:length).values.sort.reverse.take(3)
+Helper.assert_equal 1023660, a * b * c
