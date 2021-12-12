@@ -32,8 +32,10 @@ end
 $paths = []
 def get_paths(start, current_path=[])
   current_path = current_path + [start.name]
+  num_visits_by_node = current_path.group_by(&:itself).transform_values(&:length)
+
   start.edges.select do |edge|
-      times_visited = current_path.group_by(&:itself).transform_values(&:length)[edge.name] || 0
+      times_visited = num_visits_by_node[edge.name] || 0
       edge.large_cave || times_visited == 0
   end.map do |edge|
     if edge.end?
@@ -46,16 +48,15 @@ end
 
 get_paths(nodes_by_name["start"])
 
-puts $paths.count
-#puts $paths.map { |p| p.join("-")}.join("\n")
+Helper.assert_equal 4573, $paths.count
 
 # Part 2
 $paths = []
 def get_paths2(start, current_path=[])
   current_path = current_path + [start.name]
 
+  num_visits_by_node = current_path.group_by(&:itself).transform_values(&:length)
   start.edges.select do |edge|
-      num_visits_by_node = current_path.group_by(&:itself).transform_values(&:length)
       times_visited = num_visits_by_node[edge.name] || 0
       visited_small_cave_twice = num_visits_by_node.select { |k, v| k == k.downcase && v > 1 }.any?
 
@@ -71,5 +72,4 @@ end
 
 get_paths2(nodes_by_name["start"])
 
-puts $paths.count
-#puts $paths.map { |p| p.join("-")}.join("\n")
+Helper.assert_equal 117509, $paths.count
