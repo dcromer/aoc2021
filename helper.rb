@@ -7,6 +7,16 @@ end
 # Utilities for working with 2x2 arrays
 class Grid
   class << self
+    def all(g)
+      Enumerator.new do |e|
+        for i in g.each_index
+            for j in g[i].each_index
+                e.yield g[i][j]
+            end
+        end
+      end
+    end
+
     ADJACENT_SPACES = [
       [0,-1],
       [0,1],

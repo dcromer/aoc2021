@@ -40,16 +40,15 @@ class Octopus
 end
 
 class Grid
-    attr_accessor :rows, :all
+    attr_accessor :rows
 
     def initialize(rows)
         @rows = rows
-        @all = rows.flatten
     end
 
     def step
         @step_flashes = 0
-        all.each(&:energize)
+        Grid.all(@rows).each(&:energize)
 
         for i in @rows.each_index
             for j in @rows[i].each_index
@@ -58,9 +57,9 @@ class Grid
             end
         end
 
-        all.each(&:reset)
+        Grid.all(@rows).each(&:reset)
 
-        if @step_flashes == all.count
+        if @step_flashes == Grid.all(@rows).count
             return true           
         end
         false
@@ -74,16 +73,6 @@ class Grid
             neighbor = @rows[m][n]
             neighbor.energize
             flash(m, n) if neighbor.should_flash?
-        end
-    end
-
-    def all
-        return enum_for :all unless block_given?
-
-        for i in @rows.each_index
-            for j in @rows[i].each_index
-                yield @rows[i][j]
-            end
         end
     end
 
