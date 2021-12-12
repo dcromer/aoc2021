@@ -17,6 +17,16 @@ class Grid
       end
     end
 
+    def all_with_index(g)
+      Enumerator.new do |e|
+        for i in g.each_index
+            for j in g[i].each_index
+                e.yield g[i][j], [i,j]
+            end
+        end
+      end
+    end
+
     ADJACENT_SPACES = [
       [0,-1],
       [0,1],

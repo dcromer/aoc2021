@@ -50,11 +50,8 @@ class Grid
         @step_flashes = 0
         Grid.all(@rows).each(&:energize)
 
-        for i in @rows.each_index
-            for j in @rows[i].each_index
-                octopus = @rows[i][j]
-                flash(i, j) if octopus.should_flash?
-            end
+        Grid.all_with_index(@rows).each do |octopus, (i,j)|
+          flash(i, j) if octopus.should_flash?
         end
 
         Grid.all(@rows).each(&:reset)
