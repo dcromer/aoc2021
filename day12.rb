@@ -3,12 +3,15 @@ require './helper.rb'
 input = File.open("input/day12.txt").readlines.map(&:strip).reject(&:empty?)
 
 class Node
-    attr_accessor :name, :large_cave, :edges
+    attr_accessor :name, :edges
 
     def initialize(name)
         @name = name
-        @large_cave = name == name.upcase
         @edges = []
+    end
+
+    def large_cave?
+      @name == @name.upcase
     end
 
     def end?
@@ -45,14 +48,14 @@ end
 
 def filter_part_1(node, num_visits_by_node)
   times_visited = num_visits_by_node[node.name] || 0
-  node.large_cave || times_visited == 0
+  node.large_cave? || times_visited == 0
 end
 
 def filter_part_2(node, num_visits_by_node)
   times_visited = num_visits_by_node[node.name] || 0
   visited_small_cave_twice = num_visits_by_node.select { |k, v| k == k.downcase && v > 1 }.any?
 
-  !node.start? && (node.large_cave || times_visited == 0 || (times_visited == 1 && !visited_small_cave_twice))
+  !node.start? && (node.large_cave? || times_visited == 0 || (times_visited == 1 && !visited_small_cave_twice))
 end
 
 # Part 1
