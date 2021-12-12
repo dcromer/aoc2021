@@ -29,47 +29,40 @@ input.map do |line|
     nodes_by_name[ending].edges << nodes_by_name[start]
 end
 
-$paths = []
-def get_paths(start, current_path=[])
+def get_paths(start, current_path=[], filter_edges:)
   current_path = current_path + [start.name]
+
   num_visits_by_node = current_path.group_by(&:itself).transform_values(&:length)
 
-  start.edges.select do |edge|
-      times_visited = num_visits_by_node[edge.name] || 0
-      edge.large_cave || times_visited == 0
-  end.map do |edge|
+  to_visit = start.edges.select { |node| filter_edges.call(node, num_visits_by_node) }
+
+  to_visit.map do |edge|
     if edge.end?
       $paths << (current_path + [edge.name])
     else
-      get_paths(edge, current_path)
+      get_paths(edge, current_path, filter_edges: filter_edges)
     end
   end
 end
 
-get_paths(nodes_by_name["start"])
+def filter_part_1(node, num_visits_by_node)
+  times_visited = num_visits_by_node[node.name] || 0
+  node.large_cave || times_visited == 0
+end
+
+def filter_part_2(node, num_visits_by_node)
+  times_visited = num_visits_by_node[node.name] || 0
+  visited_small_cave_twice = num_visits_by_node.select { |k, v| k == k.downcase && v > 1 }.any?
+
+  !node.start? && (node.large_cave || times_visited == 0 || (times_visited == 1 && !visited_small_cave_twice))
+end
+
+$paths = []
+get_paths(nodes_by_name["start"], filter_edges: method(:filter_part_1))
 
 Helper.assert_equal 4573, $paths.count
 
-# Part 2
 $paths = []
-def get_paths2(start, current_path=[])
-  current_path = current_path + [start.name]
-
-  num_visits_by_node = current_path.group_by(&:itself).transform_values(&:length)
-  start.edges.select do |edge|
-      times_visited = num_visits_by_node[edge.name] || 0
-      visited_small_cave_twice = num_visits_by_node.select { |k, v| k == k.downcase && v > 1 }.any?
-
-      !edge.start? && (edge.large_cave || times_visited == 0 || (times_visited == 1 && !visited_small_cave_twice))
-  end.map do |edge|
-    if edge.end?
-      $paths << (current_path + [edge.name])
-    else
-      get_paths2(edge, current_path)
-    end
-  end
-end
-
-get_paths2(nodes_by_name["start"])
+get_paths(nodes_by_name["start"], filter_edges: method(:filter_part_2))
 
 Helper.assert_equal 117509, $paths.count
