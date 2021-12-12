@@ -31,18 +31,16 @@ end
 
 def get_paths(start, current_path=[], filter_edges:)
   current_path = current_path + [start.name]
-
   num_visits_by_node = current_path.group_by(&:itself).transform_values(&:length)
-
   to_visit = start.edges.select { |node| filter_edges.call(node, num_visits_by_node) }
 
   to_visit.map do |edge|
     if edge.end?
-      $paths << (current_path + [edge.name])
+      [[current_path + [edge.name]]]
     else
       get_paths(edge, current_path, filter_edges: filter_edges)
     end
-  end
+  end.flatten(1)
 end
 
 def filter_part_1(node, num_visits_by_node)
@@ -57,12 +55,10 @@ def filter_part_2(node, num_visits_by_node)
   !node.start? && (node.large_cave || times_visited == 0 || (times_visited == 1 && !visited_small_cave_twice))
 end
 
-$paths = []
-get_paths(nodes_by_name["start"], filter_edges: method(:filter_part_1))
+# Part 1
+paths = get_paths(nodes_by_name["start"], filter_edges: method(:filter_part_1))
+Helper.assert_equal 4573, paths.count
 
-Helper.assert_equal 4573, $paths.count
-
-$paths = []
-get_paths(nodes_by_name["start"], filter_edges: method(:filter_part_2))
-
-Helper.assert_equal 117509, $paths.count
+# Part 2
+paths = get_paths(nodes_by_name["start"], filter_edges: method(:filter_part_2))
+Helper.assert_equal 117509, paths.count
