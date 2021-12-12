@@ -2,21 +2,6 @@ require './helper.rb'
 
 input = File.open("input/day11_test.txt").readlines.map(&:strip).reject(&:empty?)
 
-def index_neighbors(g, i, j)
-    max_i = g.length - 1
-    max_j = g[i].length - 1
-    [
-        ([i, j - 1] if j > 0),
-        ([i - 1, j - 1] if j > 0 && i > 0),
-        ([i + 1, j - 1] if i < max_i && j > 0),
-        ([i, j + 1] if j < max_j),
-        ([i - 1, j + 1] if j < max_j && i > 0),
-        ([i - 1, j] if i > 0),
-        ([i + 1, j] if i < max_i),
-        ([i + 1, j + 1] if i < max_i && j < max_j)
-    ].compact
-end
-
 class Octopus
     attr_accessor :energy_level
     class << self
@@ -85,7 +70,7 @@ class Grid
         flasher = @rows[i][j]
         flasher.flash!
         @step_flashes += 1
-        for (m, n) in index_neighbors(@rows, i, j)
+        for (m, n) in Grid.index_neighbors_8(@rows, i, j)
             neighbor = @rows[m][n]
             neighbor.energize
             flash(m, n) if neighbor.should_flash?
