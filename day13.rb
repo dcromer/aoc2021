@@ -9,39 +9,31 @@ points = []
 folds = []
 
 input.each do |line|
-    if line.start_with?("fold along")
-        _, _, keep = line.split(" ")
-        axis, value = *keep.split("=")
-        folds << Fold.new(axis, value.to_i)
-    else
-        points << Point.new(*line.split(",").map(&:to_i))
-    end
+  if line.delete_prefix!("fold along ")
+    axis, value = *line.split("=")
+    folds << Fold.new(axis, value.to_i)
+  else
+    points << Point.new(*line.split(",").map(&:to_i))
+  end
 end
 
 def fold(points, fold)
-    new_points = points.map do |point|
-        if fold.axis == "x"
-          if point.send(fold.axis) < fold.value
-            point
-          else
-            Point.new(point.x - (point.x - fold.value) * 2, point.y)
-          end
-        else
-            if point.send(fold.axis) < fold.value
-              point
-            else
-              Point.new(point.x, point.y - (point.y - fold.value) * 2)
-            end
-        end
+  points.map do |point|
+    if point.send(fold.axis) < fold.value
+      point
+    else
+      p = point.dup
+      folded_value = point.send(fold.axis) - (point.send(fold.axis) - fold.value) * 2
+      p.send("#{fold.axis}=", folded_value)
+      p
     end
-
-    new_points.group_by(&:itself).transform_values(&:length).except { |k, v| v > 1 }.keys
+  end.uniq
 end
 
 #Part 1
-part_1_points = fold(points, folds.first)
-Helper.assert_equal 807, part_1_points.count
+Helper.assert_equal 807, fold(points, folds.first).count
 
+# Part 2
 folds.each do |fold|
   points = fold(points, fold)
 end
@@ -49,16 +41,10 @@ end
 def print_points(points)
   x = points.max_by(&:x).x + 1
   y = points.max_by(&:y).y + 1
-  grid = []
-  y.times do
-    grid << (["."] * x)
-  end
-  
-  points.each do |p|
-    grid[p.y][p.x] = "#"
-  end
+  grid = (["."] * x * y).each_slice(x).to_a 
+  points.each { |p| grid[p.y][p.x] = "#" }
   grid.map(&:join).join("\n")
 end
 
-# Part 2
+# "LGHEGUEJ"
 puts print_points(points)
