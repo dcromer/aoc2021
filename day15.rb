@@ -1,6 +1,5 @@
 require './helper.rb'
-
-input = File.open("input/day15_test.txt").readlines.map(&:strip).reject(&:empty?)
+input = File.open("input/day15.txt").readlines.map(&:strip).reject(&:empty?)
 
 grid =  input.map { |row| row.chars.map(&:to_i) }
 
@@ -27,8 +26,6 @@ def build_previous(grid)
   end
 end
 
-
-
 def djikstra(grid)
   path_weights = build_path_weights(grid)
 
@@ -46,10 +43,10 @@ def djikstra(grid)
       if new_weight < old_weight
         path_weights[l][m] = new_weight
         previous[l][m] = [i,j]
+        remaining << [l, m]
       end
     end
 
-    remaining = remaining.sort_by { |(l,m)| path_weights[l][m] }
     index = remaining.shift
   end
 
@@ -70,7 +67,18 @@ def score(grid)
   total_risk
 end
 
-puts score(grid)
+Helper.assert_equal 717, score(grid)
 
 # Part 2
+new_grid = (5 * grid.length).times.map do |i|
+  (5 * grid.length).times.map do |j|
+    original = grid[i % grid.length][j % grid.length]
+    new = original + i / grid.length + j / grid.length
+    if new > 9
+      new -= 9
+    end
+    new
+  end
+end
 
+Helper.assert_equal 2993, score(new_grid)
