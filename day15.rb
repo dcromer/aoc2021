@@ -3,13 +3,15 @@ input = File.open("input/day15.txt").readlines.map(&:strip).reject(&:empty?)
 
 grid =  input.map { |row| row.chars.map(&:to_i) }
 
-class Node
-    attr_accessor :weight, :neighbors
-   
-    def initialize(weight, neighbors)
-        @weight = weight 
-        @neighbors = neighbors
+part_2_grid = (5 * grid.length).times.map do |i|
+  (5 * grid.length).times.map do |j|
+    original = grid[i % grid.length][j % grid.length]
+    new = original + i / grid.length + j / grid.length
+    if new > 9
+      new -= 9
     end
+    new
+  end
 end
 
 def build_path_weights(grid)
@@ -26,7 +28,7 @@ def build_previous(grid)
   end
 end
 
-def djikstra(grid)
+def dijkstra(grid)
   path_weights = build_path_weights(grid)
 
   previous = build_previous(grid)
@@ -54,7 +56,7 @@ def djikstra(grid)
 end
 
 def score(grid)
-  previous = djikstra(grid)
+  previous = dijkstra(grid)
   total_risk = 0
   i = grid.length - 1
   j = grid.length - 1
@@ -68,17 +70,4 @@ def score(grid)
 end
 
 Helper.assert_equal 717, score(grid)
-
-# Part 2
-new_grid = (5 * grid.length).times.map do |i|
-  (5 * grid.length).times.map do |j|
-    original = grid[i % grid.length][j % grid.length]
-    new = original + i / grid.length + j / grid.length
-    if new > 9
-      new -= 9
-    end
-    new
-  end
-end
-
-Helper.assert_equal 2993, score(new_grid)
+Helper.assert_equal 2993, score(part_2_grid)
