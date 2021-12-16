@@ -2,11 +2,10 @@ require './helper.rb'
 input = File.open("input/day16.txt").readlines.map(&:strip).reject(&:empty?)
 
 def convert_to_binary(hex_string)
-    [hex_string].pack('H*').unpack('B*').first
+  [hex_string].pack('H*').unpack('B*').first
 end
 
-LiteralValue = Struct.new(:version, :literal_value)
-Operator = Struct.new(:version, :type_id, :packets)
+Packet = Struct.new(:version, :type_id, :literal_value, :packets, keyword_init: true)
 
 def build_packets(bitstring, outer: true)
   Enumerator.new do |e|
@@ -22,7 +21,7 @@ def build_packets(bitstring, outer: true)
           groups << group.slice(1, 4)
         end
 
-        e.yield LiteralValue.new(version, groups.join.to_i(2))
+        e.yield Packet.new(version: version, type_id: type_id, literal_value: groups.join.to_i(2))
       # Operator
       else
         length_type = bitstring.slice!(0, 1).to_i(2)
@@ -30,12 +29,12 @@ def build_packets(bitstring, outer: true)
           total_length = bitstring.slice!(0, 15).to_i(2)
           packets = build_packets(bitstring.slice!(0, total_length), outer: false)
 
-          e.yield Operator.new(version, type_id, packets.to_a)
+          e.yield Packet.new(version: version, type_id: type_id, packets: packets.to_a)
         else
           num_packets = bitstring.slice!(0, 11).to_i(2)
           packets = build_packets(bitstring, outer: false).take(num_packets)
            
-          e.yield Operator.new(version, type_id, packets.to_a)
+          e.yield Packet.new(version: version, type_id: type_id, packets: packets.to_a)
         end
       end
       if outer
@@ -51,35 +50,31 @@ def add_versions(packets)
   versions = 0
   packets.each do |packet|
     versions += packet.version
-    if packet.respond_to?(:packets)
-      versions += add_versions(packet.packets)
-    end
+    versions += add_versions(packet.packets) if packet.packets
   end
   versions
 end
 
 def calculate_packet(packet)
-  if packet.is_a?(LiteralValue)
+  case packet.type_id
+  when 0
+    packet.packets.map { |p| calculate_packet(p) }.sum
+  when 1
+    product = 1
+    packet.packets.each { |p| product = product * calculate_packet(p) }
+    product
+  when 2
+    packet.packets.map { |p| calculate_packet(p) }.min
+  when 3
+    packet.packets.map { |p| calculate_packet(p) }.max
+  when 4
     packet.literal_value
-  else
-    case packet.type_id
-    when 0
-      packet.packets.map { |p| calculate_packet(p) }.sum
-    when 1
-      product = 1
-      packet.packets.each { |p| product = product * calculate_packet(p) }
-      product
-    when 2
-      packet.packets.map { |p| calculate_packet(p) }.min
-    when 3
-      packet.packets.map { |p| calculate_packet(p) }.max
-    when 5
-      calculate_packet(packet.packets.first) > calculate_packet(packet.packets[1]) ? 1 : 0
-    when 6
-      calculate_packet(packet.packets.first) < calculate_packet(packet.packets[1]) ? 1 : 0
-    when 7
-      calculate_packet(packet.packets.first) == calculate_packet(packet.packets[1]) ? 1 : 0
-    end
+  when 5
+    calculate_packet(packet.packets.first) > calculate_packet(packet.packets[1]) ? 1 : 0
+  when 6
+    calculate_packet(packet.packets.first) < calculate_packet(packet.packets[1]) ? 1 : 0
+  when 7
+    calculate_packet(packet.packets.first) == calculate_packet(packet.packets[1]) ? 1 : 0
   end
 end
 
