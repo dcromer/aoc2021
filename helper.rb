@@ -58,3 +58,9 @@ class Grid
     end
   end
 end
+
+Vector2 = Struct.new(:x,:y) do
+  def +(other)
+      self.class.new(self.x + other.x, self.y + other.y)
+  end
+end

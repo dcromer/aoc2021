@@ -1,37 +1,52 @@
-#sample_input = "target area: x=20..30, y=-10..-5"
+require './helper.rb'
 
-#xmin,xmax,ymin,ymax = 20,30,-10,-5
 xmin,xmax,ymin,ymax = 32,65,-225,-177
 
-#input = "target area: x=32..65, y=-225..-177"
-
-def step(y, yv)
-    y = y + yv
-    yv -= 1
-    return y, yv
+def step(p, v)
+    p += v
+    x = if v.x > 0
+        v.x - 1
+    elsif v.x < 0
+        v.x + 1
+    else
+        0
+    end
+    v = Vector2.new(x, v.y - 1)
+    return p, v
 end
 
-def fire(yv, ymin, ymax)
-    y = 0
-    apogee = y
-    yvmax = ymax - ymin
+def fire(v, xmin, xmax, ymin, ymax)
+    p = Vector2.new(0, 0)
+    apogee = p.y
 
-    while y > ymin
-        new_y, yv = step(y, yv)
-        apogee = new_y if new_y > apogee
-        if new_y >= ymin && new_y <= ymax
+    while p.y > ymin && p.x < xmax
+        new_p, v = step(p, v)
+        apogee = new_p.y if new_p.y > apogee
+        if new_p.y >= ymin && new_p.y <= ymax && new_p.x >=xmin && new_p.x <= xmax
             return true, apogee
         end
-        y = new_y
+        p = new_p
     end
 
     return false, nil
 end
 
-def solve_part_1(ymin, ymax)
-    1000.times.map do |yv|
-        [yv, fire(yv, ymin, ymax)]
-    end.select { |(yv, result)| result[0] }
+def run(xmin, xmax, ymin, ymax)
+    (-500..500).to_a.map do |yv|
+        1000.times.map do |xv|
+            v = Vector2.new(xv, yv)
+            [v, fire(v, xmin, xmax, ymin, ymax)]
+        end.select { |(_, result)| result[0] }
+    end.flatten(1)
 end
 
-puts solve_part_1(ymin, ymax).inspect
+def solve_part_1(xmin, xmax, ymin, ymax)
+    run(xmin, xmax, ymin, ymax).map { |(v, result)| result[1] }.max
+end
+
+def solve_part_2(xmin, xmax, ymin, ymax)
+    run(xmin, xmax, ymin, ymax).count
+end
+
+Helper.assert_equal 25200, solve_part_1(xmin, xmax, ymin, ymax)
+Helper.assert_equal 3012, solve_part_2(xmin, xmax, ymin, ymax)
