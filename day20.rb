@@ -2,7 +2,6 @@ require './helper.rb'
 input = File.open("input/day20.txt").readlines.map(&:strip).reject(&:empty?)
 
 kernel = input.shift.chars
-
 image = input.map(&:chars)
 
 ORDERED_INDEXES = [
@@ -28,19 +27,15 @@ def pad(g, n, pad_char)
     blank_cols = [pad_char] * n
 
     new_g = []
-    n.times do
-        new_g << blank_row
-    end
+    n.times do { new_g << blank_row }
 
     g.each do |row|
         new_g << (blank_cols + row + blank_cols)
     end
 
-    n.times do
-        new_g << blank_row
-    end
-    new_g
+    n.times do { new_g << blank_row }
 
+    new_g
 end
 
 def map_pixel(g, a, i, j)
