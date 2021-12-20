@@ -47,7 +47,9 @@ class Grid
       map_filter_neighbors(i, j, g.length, DIAGONAL_SPACES)
     end
 
-    private
+    def print(g)
+      g.map(&:join).join("\n")
+    end
 
     def map_filter_neighbors(i, j, max, vectors)
       vectors.map do |(k, l)|
